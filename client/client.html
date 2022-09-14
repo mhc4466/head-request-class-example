@@ -5,7 +5,7 @@
   <link rel="stylesheet" type="text/css" href="/style.css">
   
   <script>
-    const handleResponse = (response, parseResponse) => {
+    const handleResponse = async (response, parseResponse) => {
       const content = document.querySelector('#content');
 
       switch(response.status) {
@@ -25,19 +25,47 @@
           content.innerHTML = `Error code not implemented by client.`;
           break;
       }
+
+      if (parseResponse) {
+        const textResponse = await response.text();
+        content.innerHTML += `<p>${textResponse}</p>`;
+      }
+      else {
+        content.innerHTML += `<p>Metadata Only</p>`;
+      }
     };
 
-    const requestUpdate = (userForm) => {
+    const requestUpdate = async (userForm) => {
       const url = userForm.querySelector('#urlField').value;
       const method = userForm.querySelector('#methodSelect').value;
       
-
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Accept': 'application/json',
+        }
+      });
+      handleResponse(response, method === 'get');
     };
+
+    
 
 
     const init = () => {
       const userForm = document.querySelector('#userForm');
+
+      /*
+      const getUsers = (event) => {
+        event.preventDefault();
+        requestUpdate(userForm);
+      }
+      */
       
+      userForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        requestUpdate(userForm);
+        return false;
+      });
     };
 
     window.onload = init;
